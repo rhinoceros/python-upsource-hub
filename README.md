@@ -1,2 +1,2 @@
 # python_upsource
-python upsource web API
+python upsource hub web API
