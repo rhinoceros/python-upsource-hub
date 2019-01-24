@@ -1,11 +1,9 @@
-#-*- coding:utf-8 -*-
-import json
+# -*- coding:utf-8 -*-
+
 import requests
-from common import expand_url,copy_dict
+from common import copy_dict
 from common import ClientError, AuthError, ValidationError, ServerError
-import pprint
 import base64
-import urllib, hashlib
 
 class HubClient:
     RULES_USERS_ENDPOINT = '/api/rest/users'
@@ -209,26 +207,43 @@ class HubClient:
             else:
                 break
 
-    #获取指定用户的信息
-    def get_user(self, user_id, fields = None):
+    def get_user(self, user_id, fields=None):
+        """
+        获取指定用户的信息
+        :param user_id:
+        :param fields:
+        :return:
+        """
         params = {}
         if fields:
             params['fields'] = fields
-        resp = self.http_get(self.RULES_USERS_ENDPOINT + '/' + user_id, query_data = params)
+        resp = self.http_get(self.RULES_USERS_ENDPOINT + '/' + user_id, query_data=params)
         return resp.json()
 
-    #获取所有用户信息
-    def get_all_users(self, fields = None):
+    def get_all_users(self, fields=None):
+        """
+        获取所有用户信息
+        :param fields:
+        :return:
+        """
         top = 100
         params = {
             '$top': top
         }
         if fields:
             params['fields'] = fields
-        return self.getall(self.http_get, params, 'users', self.RULES_USERS_ENDPOINT, query_data = params)
+        return self.getall(self.http_get, params, 'users', self.RULES_USERS_ENDPOINT, query_data=params)
 
-    #创建用户
-    def create_user(self, login, name, profile, VCSUserNames, fields = None):
+    def create_user(self, login, name, profile, VCSUserNames, fields=None):
+        """
+        创建用户
+        :param login:
+        :param name:
+        :param profile:
+        :param VCSUserNames:
+        :param fields:
+        :return:
+        """
         user_data = {
             'login': login,
             'profile': profile,
@@ -240,15 +255,33 @@ class HubClient:
         if fields:
             params['fields'] = fields
 
-        res = self.http_post(self.RULES_USERS_ENDPOINT, query_data = params, post_data = user_data)
+        res = self.http_post(self.RULES_USERS_ENDPOINT, query_data=params, post_data=user_data)
         return res.json()
 
-    #删除指定用户
+    def update_existing_user(self, user_id, user_data):
+        """
+        更新user
+        :param user_id:
+        :param user_data:
+        :return:
+        """
+        self.http_post(self.RULES_USERS_ENDPOINT + '/' + user_id, post_data=user_data)
+
     def delete_user(self, user_id):
+        """
+        删除指定用户
+        :param user_id:
+        :return:
+        """
         self.http_delete(self.RULES_USERS_ENDPOINT + '/' + user_id)
 
-    #更新用户头像
     def update_user_avatar(self, user_id, avatar_content):
+        """
+        更新用户头像
+        :param user_id:
+        :param avatar_content:
+        :return:
+        """
         user_info = self.get_user(user_id)
         base64_data = base64.b64encode(avatar_content)
 
@@ -257,123 +290,207 @@ class HubClient:
             "avatarUrl": "data:image/jpeg;base64,{}".format(base64_data)
         }
 
-        self.http_post(self.RULES_USERS_ENDPOINT + '/' + user_id, post_data = user_info)
+        self.http_post(self.RULES_USERS_ENDPOINT + '/' + user_id, post_data=user_info)
 
-    #更新用户邮箱授权
     def update_user_email_verified(self, user_id, email_verified):
+        """
+        更新用户邮箱授权
+        :param user_id:
+        :param email_verified:
+        :return:
+        """
         user_info = self.get_user(user_id)
         user_info['profile']['email']['verified'] = email_verified
-        self.http_post(self.RULES_USERS_ENDPOINT + '/' + user_id, post_data = user_info)
+        self.http_post(self.RULES_USERS_ENDPOINT + '/' + user_id, post_data=user_info)
 
-    #Get All Groups of a User
-    def get_groups_of_user(self, user_id, fields = None):
+    def get_groups_of_user(self, user_id, fields=None):
+        """
+        Get All Groups of a User
+        :param user_id:
+        :param fields:
+        :return:
+        """
         top = 100
         params = {
             '$top': top
         }
         if fields:
             params['fields'] = fields
-        return self.getall(self.http_get, params, 'groups', self.RULES_USERS_ENDPOINT + '/' + user_id + '/groups', query_data = params)
+        return self.getall(self.http_get, params, 'groups', self.RULES_USERS_ENDPOINT + '/' + user_id + '/groups', query_data=params)
 
-    #Get User Group
-    def get_user_group(self, user_group_id, fields = None):
+    def get_user_group(self, user_group_id, fields=None):
+        """
+        Get User Group
+        :param user_group_id:
+        :param fields:
+        :return:
+        """
         params = {}
         if fields:
             params['fields'] = fields
-        resp = self.http_get(self.RULES_USERGROUPS_ENDPOINT + '/' + user_group_id, query_data = params)
+        resp = self.http_get(self.RULES_USERGROUPS_ENDPOINT + '/' + user_group_id, query_data=params)
         return resp.json()
 
-    #Get All User Groups
-    def get_all_user_groups(self, fields = None):
+    def get_all_user_groups(self, fields=None):
+        """
+        Get All User Groups
+        :param fields:
+        :return:
+        """
         top = 100
         params = {
             '$top': top
         }
         if fields:
             params['fields'] = fields
-        return self.getall(self.http_get, params, 'usergroups', self.RULES_USERGROUPS_ENDPOINT, query_data = params)
+        return self.getall(self.http_get, params, 'usergroups', self.RULES_USERGROUPS_ENDPOINT, query_data=params)
 
-    #Create New User Group
-    def create_user_group(self, user_group, fields = None):
+    def create_user_group(self, user_group, fields=None):
+        """
+        Create New User Group
+        :param user_group:
+        :param fields:
+        :return:
+        """
         params = {}
         if fields:
             params['fields'] = fields
 
-        response = self.http_post(self.RULES_USERGROUPS_ENDPOINT, query_data = params, post_data = user_group)
+        response = self.http_post(self.RULES_USERGROUPS_ENDPOINT, query_data=params, post_data=user_group)
         return response.json()
 
-    #Delete Existing User Group
     def delete_user_group(self, user_group_id):
+        """
+        Delete Existing User Group
+        :param user_group_id:
+        :return:
+        """
         self.http_delete(self.RULES_USERGROUPS_ENDPOINT + '/' + user_group_id)
 
-    #Update Existing User Group
     def update_existing_user_group(self, user_group_id, user_group_data):
-        self.http_post(self.RULES_USERGROUPS_ENDPOINT + '/' + user_group_id, post_data = user_group_data)
+        """
+        Update Existing User Group
+        :param user_group_id:
+        :param user_group_data:
+        :return:
+        """
+        self.http_post(self.RULES_USERGROUPS_ENDPOINT + '/' + user_group_id, post_data=user_group_data)
 
-    #Get All Users of a User Group
-    def get_users_of_user_group(self, user_group_id, fields = None):
+    def get_users_of_user_group(self, user_group_id, fields=None):
+        """
+        Get All Users of a User Group
+        :param user_group_id:
+        :param fields:
+        :return:
+        """
         top = 100
         params = {
             '$top': top
         }
         if fields:
             params['fields'] = fields
-        return self.getall(self.http_get, params, 'users', self.RULES_USERGROUPS_ENDPOINT + '/' + user_group_id + '/users', query_data = params)
+        return self.getall(self.http_get, params, 'users', self.RULES_USERGROUPS_ENDPOINT + '/' + user_group_id + '/users', query_data=params)
 
-    #Get User from Users of a User Group
-    def get_user_from_users_of_user_group(self, user_group_id, user_id, fields = None):
+    def get_user_from_users_of_user_group(self, user_group_id, user_id, fields=None):
+        """
+        Get User from Users of a User Group
+        :param user_group_id:
+        :param user_id:
+        :param fields:
+        :return:
+        """
         params = {}
         if fields:
             params['fields'] = fields
-        resp = self.http_get(self.RULES_USERGROUPS_ENDPOINT + '/' + user_group_id + '/users/' + user_id, query_data = params)
+        resp = self.http_get(self.RULES_USERGROUPS_ENDPOINT + '/' + user_group_id + '/users/' + user_id, query_data=params)
         return resp.json()
 
-    #Add User to Users of a User Group
     def add_user_to_users_of_user_group(self, user_group_id, user):
-        self.http_post(self.RULES_USERGROUPS_ENDPOINT + '/' + user_group_id + '/users', post_data = user)
+        """
+        Add User to Users of a User Group
+        :param user_group_id:
+        :param user:
+        :return:
+        """
+        self.http_post(self.RULES_USERGROUPS_ENDPOINT + '/' + user_group_id + '/users', post_data=user)
 
-    #Remove User from Users of a User Group
     def remove_user_from_users_of_user_group(self, user_group_id, user_id):
+        """
+        Remove User from Users of a User Group
+        :param user_group_id:
+        :param user_id:
+        :return:
+        """
         self.http_delete(self.RULES_USERGROUPS_ENDPOINT + '/' + user_group_id + '/users/' + user_id)
 
-    #Get All Project Roles of a User Group
-    def get_project_roles_of_usergroup(self, usergroup_id, fields = None):
+    def get_project_roles_of_usergroup(self, usergroup_id, fields=None):
+        """
+        Get All Project Roles of a User Group
+        :param usergroup_id:
+        :param fields:
+        :return:
+        """
         top = 100
         params = {
             '$top': top
         }
         if fields:
             params['fields'] = fields
-        return self.getall(self.http_get, params, 'projectroles', self.RULES_USERGROUPS_ENDPOINT + '/' + usergroup_id + '/projectroles', query_data = params)
+        return self.getall(self.http_get, params, 'projectroles', self.RULES_USERGROUPS_ENDPOINT + '/' + usergroup_id + '/projectroles', query_data=params)
 
-    #Add Project Role to Project Roles of a User Group
     def add_project_role_to_project_roles_of_usergroup(self, usergroup_id, project_role):
-        self.http_post(self.RULES_USERGROUPS_ENDPOINT + '/' + usergroup_id + '/projectroles', post_data = project_role)
+        """
+        Add Project Role to Project Roles of a User Group
+        :param usergroup_id:
+        :param project_role:
+        :return:
+        """
+        self.http_post(self.RULES_USERGROUPS_ENDPOINT + '/' + usergroup_id + '/projectroles', post_data=project_role)
 
-    #获取指定project的信息
-    def get_project(self, project_id, fields = None):
+    def get_project(self, project_id, fields=None):
+        """
+        获取指定project的信息
+        :param project_id:
+        :param fields:
+        :return:
+        """
         params = {}
         if fields:
             params['fields'] = fields
-        resp = self.http_get(self.RULES_PROJECTS_ENDPOINT + '/' + project_id, query_data = params)
+        resp = self.http_get(self.RULES_PROJECTS_ENDPOINT + '/' + project_id, query_data=params)
         return resp.json()
 
-    #获取所有project的信息
-    def get_all_projects(self, fields = None):
+    def get_all_projects(self, fields=None):
+        """
+        获取所有project的信息
+        :param fields:
+        :return:
+        """
         top = 100
         params = {
             '$top': top
         }
         if fields:
             params['fields'] = fields
-        return self.getall(self.http_get, params, 'projects', self.RULES_PROJECTS_ENDPOINT, query_data = params)
+        return self.getall(self.http_get, params, 'projects', self.RULES_PROJECTS_ENDPOINT, query_data=params)
 
-    #删除指定project
     def delete_project(self, project_id):
+        """
+        删除指定project
+        :param project_id:
+        :return:
+        """
         self.http_delete(self.RULES_PROJECTS_ENDPOINT + '/' + project_id)
 
-    #创建project
-    def create_project(self, key, name, resources, fields = None):
+    def create_project(self, key, name, resources, fields=None):
+        """
+        创建project
+        :param key:
+        :param name:
+        :param resources:
+        :param fields:
+        :return:
+        """
         project_data = {
             'key': key,
             'name': name,
@@ -384,56 +501,90 @@ class HubClient:
         if fields:
             params['fields'] = fields
 
-        res = self.http_post(self.RULES_PROJECTS_ENDPOINT, query_data = params, post_data = project_data)
+        res = self.http_post(self.RULES_PROJECTS_ENDPOINT, query_data=params, post_data=project_data)
         return res.json()
 
-    #更新project
     def update_existing_project(self, project_id, project_data):
-        self.http_post(self.RULES_PROJECTS_ENDPOINT + '/' + project_id, post_data = project_data)
+        """
+        更新project
+        :param project_id:
+        :param project_data:
+        :return:
+        """
+        self.http_post(self.RULES_PROJECTS_ENDPOINT + '/' + project_id, post_data=project_data)
 
-    #Get All Teams of a Project
-    def get_teams_of_project(self, project_id, fields = None):
+    def get_teams_of_project(self, project_id, fields=None):
+        """
+        Get All Teams of a Project
+        :param project_id:
+        :param fields:
+        :return:
+        """
         top = 100
         params = {
             '$top': top
         }
         if fields:
             params['fields'] = fields
-        return self.getall(self.http_get, params, 'teams', self.RULES_PROJECTS_ENDPOINT + '/' + project_id + '/teams', query_data = params)
+        return self.getall(self.http_get, params, 'teams', self.RULES_PROJECTS_ENDPOINT + '/' + project_id + '/teams', query_data=params)
 
-    #Add Team to Teams of a Project
     def add_team_to_teams_of_project(self, project_id, team_data):
-        self.http_post(self.RULES_PROJECTS_ENDPOINT + '/' + project_id + '/teams', post_data = team_data)
+        """
+        Add Team to Teams of a Project
+        :param project_id:
+        :param team_data:
+        :return:
+        """
+        self.http_post(self.RULES_PROJECTS_ENDPOINT + '/' + project_id + '/teams', post_data=team_data)
 
-    #Remove Team from Teams of a Project
     def delete_team_from_teams_of_project(self, project_id, team_id):
-        self.http_delete(self.RULES_PROJECTS_ENDPOINT + '/' + project_id + '/teams/'+ team_id)
+        """
+        Remove Team from Teams of a Project
+        :param project_id:
+        :param team_id:
+        :return:
+        """
+        self.http_delete(self.RULES_PROJECTS_ENDPOINT + '/' + project_id + '/teams/' + team_id)
 
-    #Get All Resources
-    def get_all_resources(self, fields = None):
+    def get_all_resources(self, fields=None):
+        """
+        Get All Resources
+        :param fields:
+        :return:
+        """
         top = 100
         params = {
             '$top': top
         }
         if fields:
             params['fields'] = fields
-        return self.getall(self.http_get, params, 'resources', self.RULES_RESOURCES_ENDPOINT, query_data = params)
-        
-        
-    #Get All Transitive Project Roles of a Project
-    def get_all_project_roles_of_project(self, project_id, fields = None):
+        return self.getall(self.http_get, params, 'resources', self.RULES_RESOURCES_ENDPOINT, query_data=params)
+
+    def get_all_project_roles_of_project(self, project_id, fields=None):
+        """
+        Get All Transitive Project Roles of a Project
+        :param project_id:
+        :param fields:
+        :return:
+        """
         top = 100
         params = {
             '$top': top
         }
         if fields:
             params['fields'] = fields
-        return self.getall(self.http_get, params, 'transitiveprojectroles', self.RULES_PROJECTS_ENDPOINT + '/' + project_id + '/transitiveprojectroles', query_data = params)
+        return self.getall(self.http_get, params, 'transitiveprojectroles', self.RULES_PROJECTS_ENDPOINT + '/' + project_id + '/transitiveprojectroles', query_data=params)
 
-    #Get Transitive Project Role from Transitive Project Roles of a Project
-    def get_project_role_from_project_roles_of_project(self, project_id, project_role_id, fields = None):
+    def get_project_role_from_project_roles_of_project(self, project_id, project_role_id, fields=None):
+        """
+        Get Transitive Project Role from Transitive Project Roles of a Project
+        :param project_id:
+        :param project_role_id:
+        :param fields:
+        :return:
+        """
         params = {}
         if fields:
             params['fields'] = fields
-        resp = self.http_get(self.RULES_PROJECTS_ENDPOINT + '/' + project_id + '/transitiveprojectroles/' + project_role_id, query_data = params)
+        resp = self.http_get(self.RULES_PROJECTS_ENDPOINT + '/' + project_id + '/transitiveprojectroles/' + project_role_id, query_data=params)
         return resp.json()
