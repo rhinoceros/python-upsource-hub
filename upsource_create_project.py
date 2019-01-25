@@ -25,7 +25,7 @@ def generate_project_settings(project_path, default_branch, project_type, maven_
     :param vcsPrivateKey:
     :return:
     """
-    vcsUrl = 'git@git.weidai.work:{}.git'.format(project_path)
+    vcsUrl = 'git@git.*.work:{}.git'.format(project_path)
     mapping = {}
     mapping['id'] = ''
     mapping['key'] = vcsPrivateKey
